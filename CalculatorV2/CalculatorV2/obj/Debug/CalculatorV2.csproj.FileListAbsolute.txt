@@ -1,0 +1,10 @@
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\bin\Debug\CalculatorV2.exe.config
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\bin\Debug\CalculatorV2.exe
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\bin\Debug\CalculatorV2.pdb
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\obj\Debug\CalculatorV2.csprojAssemblyReference.cache
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\obj\Debug\CalculatorV2.Form1.resources
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\obj\Debug\CalculatorV2.Properties.Resources.resources
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\obj\Debug\CalculatorV2.csproj.GenerateResource.cache
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\obj\Debug\CalculatorV2.csproj.CoreCompileInputs.cache
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\obj\Debug\CalculatorV2.exe
+C:\Users\Matthew\source\repos\CalculatorV2\CalculatorV2\obj\Debug\CalculatorV2.pdb
