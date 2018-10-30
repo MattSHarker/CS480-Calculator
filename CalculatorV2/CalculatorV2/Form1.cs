@@ -18,30 +18,24 @@ namespace CalculatorV2
 		bool showingAnswer = true;
 
 		// strings to hold the equations
-		string tempString = "";
-		string fullString = "";
-		string postfixStr = "";
+		private string tempString = "";
+		private string fullString = "";
+		private string postfixStr = "";
 
-		string[] infixArray;
-		string[] postfixArray;
+		private string[] infixArray;
+		private string[] postfixArray;
 
-		double finalAnswer = 0.0;
+		private double finalAnswer = 0.0;
 
 		object[] listOfElements;
-
-		//		~~~~~~~~~~~~~~~~~~~~ Public Functions ~~~~~~~~~~~~~~~~~~~~
+		
 
 		public Form1()
 		{
 			InitializeComponent();
 		}
 
-		public bool checkForAnswer()
-		{
-			return showingAnswer;
-		}
-
-		//		~~~~~~~~~~~~~~~~~~~~ Button Functions ~~~~~~~~~~~~~~~~~~~~
+//		~~~~~~~~~~~~~~~~~~~~ Button Functions ~~~~~~~~~~~~~~~~~~~~
 
 		private void button0_Click_1(object sender, EventArgs e)
 		{
@@ -226,27 +220,6 @@ namespace CalculatorV2
 			}
 		}
 
-		private void buttonEquals_Click(object sender, EventArgs e)
-		{
-			try
-			{
-				updateFullString();
-				String postfix = prefixToPostfix(fullString);
-				double answer = calculatePostfix(postfix);
-				textBoxDisplay.Text = answer.ToString();
-			}
-			catch (Exception exception)
-			{
-				textBoxDisplay.Text = "Syntax Error";
-				Console.WriteLine(exception);
-				throw;
-			}
-
-			showingAnswer = true;
-			tempString = "";
-			fullString = "";
-		}
-
 		private void buttonPlus_Click(object sender, EventArgs e)
 		{
 			if (tempString.EndsWith("."))
@@ -325,8 +298,11 @@ namespace CalculatorV2
 			if (tempString.EndsWith("."))
 				tempString += "0";
 
-			updateFullString();
-			tempString = " (";
+			if (checkForOperator() || fullString.Length == 0)
+			{
+				updateFullString();
+				tempString = " ( ";
+			}
 
 			updateDisplay();
 		}
@@ -377,7 +353,27 @@ namespace CalculatorV2
 			updateDisplay();
 		}
 
-		// clears the entire entry
+		private void buttonEquals_Click(object sender, EventArgs e)
+		{
+			updateFullString();
+
+			try
+			{
+				String postfix = prefixToPostfix(fullString);
+				double answer = calculatePostfix(postfix);
+				textBoxDisplay.Text = answer.ToString();
+			}
+			catch (Exception exception)
+			{
+				textBoxDisplay.Text = "Syntax Error";
+				Console.WriteLine(exception);
+			}
+
+			showingAnswer = true;
+			fullString = "";
+		}
+
+		// clears fullString
 		private void buttonClear_Click(object sender, EventArgs e)
 		{
 			fullString = "";
@@ -385,14 +381,22 @@ namespace CalculatorV2
 			clearDisplay();
 		}
 
-		// clears only temp string
+		// clears tempString
 		private void buttonClearTemp_Click(object sender, EventArgs e)
 		{
 			tempString = "";
 			updateDisplay();
 		}
 
-		// returns true if the most recent entry is a digit or .
+
+//		~~~~~~~~~~~~~~~~~~~~ Status Functions ~~~~~~~~~~~~~~~~~~~~
+
+		private bool checkForAnswer()
+		{
+			return showingAnswer;
+		}
+
+		// returns true if the most recent entry is a digit or "."
 		private bool checkForNumber()
 		{
 			return tempString.EndsWith("0") || tempString.EndsWith("1") ||
@@ -429,13 +433,8 @@ namespace CalculatorV2
 			showingAnswer = false;
 		}
 
-		private void clearIfResult()
-		{
-			if (checkForAnswer())
-				clearDisplay();
-		}
 
-		//		~~~~~~~~~~~~~~~ infix/postfix functions ~~~~~~~~~~~~~~~
+//		~~~~~~~~~~~~~~~~~~~~ infix/postfix Functions ~~~~~~~~~~~~~~~~~~~~
 
 		private string prefixToPostfix(string str)
 		{
@@ -453,7 +452,7 @@ namespace CalculatorV2
 					case "/":
 					case "^":
 						while (stack.Count != 0 && (string)stack.Peek() != "("
-												&& precedence(temp) <= precedence((string)stack.Peek()))
+							&& precedence(temp) <= precedence(stack.Peek().ToString()))
 						{
 							postfixStr += (stack.Pop() + " ");
 						}
@@ -468,7 +467,7 @@ namespace CalculatorV2
 
 					// closing parenthesis
 					case ")":
-						while (stack.Peek() != "(")
+						while (stack.Peek().ToString() != "(")
 						{
 							postfixStr += stack.Pop() + " ";
 						}
