@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -19,16 +20,16 @@ namespace CalculatorV2
 		// strings to hold the equations
 		string tempString = "";
 		string fullString = "";
+		string postfixStr = "";
+
+		string[] infixArray;
+		string[] postfixArray;
 
 		double finalAnswer = 0.0;
 
 		object[] listOfElements;
 
-		Stack stack;
-
-		String[] strArray;
-
-//		~~~~~~~~~~~~~~~~~~~~ Public Functions ~~~~~~~~~~~~~~~~~~~~
+		//		~~~~~~~~~~~~~~~~~~~~ Public Functions ~~~~~~~~~~~~~~~~~~~~
 
 		public Form1()
 		{
@@ -40,7 +41,7 @@ namespace CalculatorV2
 			return showingAnswer;
 		}
 
-//		~~~~~~~~~~~~~~~~~~~~ Private Functions ~~~~~~~~~~~~~~~~~~~
+		//		~~~~~~~~~~~~~~~~~~~~ Button Functions ~~~~~~~~~~~~~~~~~~~~
 
 		private void button0_Click_1(object sender, EventArgs e)
 		{
@@ -56,7 +57,7 @@ namespace CalculatorV2
 			tempString += "0";
 			updateDisplay();
 		}
-		
+
 		private void button1_Click(object sender, EventArgs e)
 		{
 			if (showingAnswer)
@@ -212,7 +213,6 @@ namespace CalculatorV2
 			updateDisplay();
 		}
 
-		// if the number is negative
 		private void buttonNegate_Click(object sender, EventArgs e)
 		{
 			// only happen if tempString currently has a number
@@ -228,7 +228,23 @@ namespace CalculatorV2
 
 		private void buttonEquals_Click(object sender, EventArgs e)
 		{
-			updateFullString();
+			try
+			{
+				updateFullString();
+				String postfix = prefixToPostfix(fullString);
+				double answer = calculatePostfix(postfix);
+				textBoxDisplay.Text = answer.ToString();
+			}
+			catch (Exception exception)
+			{
+				textBoxDisplay.Text = "Syntax Error";
+				Console.WriteLine(exception);
+				throw;
+			}
+
+			showingAnswer = true;
+			tempString = "";
+			fullString = "";
 		}
 
 		private void buttonPlus_Click(object sender, EventArgs e)
@@ -309,15 +325,8 @@ namespace CalculatorV2
 			if (tempString.EndsWith("."))
 				tempString += "0";
 
-			if (!checkForOperator())
-			{
-				updateFullString();
-				tempString = " ( ";
-			}
-			else
-			{
-				tempString = " (";
-			}
+			updateFullString();
+			tempString = " (";
 
 			updateDisplay();
 		}
@@ -348,11 +357,11 @@ namespace CalculatorV2
 			if (!checkForOperator())
 			{
 				updateFullString();
-				tempString = "^";
+				tempString = " ^";
 			}
 			else
 			{
-				tempString = "^";
+				tempString = " ^";
 			}
 
 			updateDisplay();
@@ -361,10 +370,10 @@ namespace CalculatorV2
 		private void buttonBackspace_Click(object sender, EventArgs e)
 		{
 			if (tempString.Length > 0)
-				tempString = tempString.Remove(tempString.Length-1, 1);
+				tempString = tempString.Remove(tempString.Length - 1, 1);
 			else if (fullString.Length > 0)
-					fullString = fullString.Remove(fullString.Length - 1, 1);
-			
+				fullString = fullString.Remove(fullString.Length - 1, 1);
+
 			updateDisplay();
 		}
 
@@ -387,20 +396,19 @@ namespace CalculatorV2
 		private bool checkForNumber()
 		{
 			return tempString.EndsWith("0") || tempString.EndsWith("1") ||
-			       tempString.EndsWith("2") || tempString.EndsWith("3") ||
-			       tempString.EndsWith("4") || tempString.EndsWith("5") ||
-			       tempString.EndsWith("6") || tempString.EndsWith("7") ||
-			       tempString.EndsWith("8") || tempString.EndsWith("9") ||
-			       tempString.EndsWith(".");
+				   tempString.EndsWith("2") || tempString.EndsWith("3") ||
+				   tempString.EndsWith("4") || tempString.EndsWith("5") ||
+				   tempString.EndsWith("6") || tempString.EndsWith("7") ||
+				   tempString.EndsWith("8") || tempString.EndsWith("9") ||
+				   tempString.EndsWith(".");
 		}
 
 		// returns true if the most recent entry is an operator
 		private bool checkForOperator()
 		{
 			return tempString.EndsWith("+") || tempString.EndsWith("-")
-               ||  tempString.EndsWith("/") || tempString.EndsWith("*")
-               ||  tempString.EndsWith("^") || tempString.EndsWith("(")
-			   ||  tempString.EndsWith(")");
+			   || tempString.EndsWith("/") || tempString.EndsWith("*")
+			   || tempString.EndsWith("^");
 		}
 
 		private void updateFullString()
@@ -427,32 +435,140 @@ namespace CalculatorV2
 				clearDisplay();
 		}
 
-		// change this to return sting
-		private void prefixToPostfix(String prefix)
+		//		~~~~~~~~~~~~~~~ infix/postfix functions ~~~~~~~~~~~~~~~
+
+		private string prefixToPostfix(string str)
 		{
-			updateFullString();
+			Stack stack = new Stack();
+			infixArray = str.Split(' ');
 
-			strArray = fullString.Split(' ');
-			
+			foreach (var temp in infixArray)
+			{
+				switch (temp)
+				{
+					// operators
+					case "+":
+					case "-":
+					case "*":
+					case "/":
+					case "^":
+						while (stack.Count != 0 && (string)stack.Peek() != "("
+												&& precedence(temp) <= precedence((string)stack.Peek()))
+						{
+							postfixStr += (stack.Pop() + " ");
+						}
 
+						stack.Push(temp);
+						break;
 
-			//stack = new Stack();
+					// open parenthesis
+					case "(":
+						stack.Push(temp);
+						break;
+
+					// closing parenthesis
+					case ")":
+						while (stack.Peek() != "(")
+						{
+							postfixStr += stack.Pop() + " ";
+						}
+						stack.Pop();
+						break;
+
+					// operands
+					default:
+						postfixStr += (temp + " ");
+						break;
+
+				} // end switch
+			}
+
+			while (stack.Count != 0)
+			{
+				postfixStr += stack.Pop() + " ";
+			}
+
+			return postfixStr.TrimEnd(' ');
 		}
 
-		
-//	~~~~~~~~~~~~~~~ infix/postfix functions ~~~~~~~~~~~~~~~
-
-		private int precedence(char c)
+		private double calculatePostfix(string prefixString)
 		{
-			if (c == '^')
+			Stack stack = new Stack();
+			string[] postfixArr = prefixString.Split(' ');
+
+			foreach (var str in postfixArr)
+			{
+				double a, b, answer;
+				if (str.ToString() == "+")
+				{
+					String aStr = stack.Pop().ToString();
+					String bStr = stack.Pop().ToString();
+
+					a = Convert.ToDouble(aStr);
+					b = Convert.ToDouble(bStr);
+					answer = b + a;
+					stack.Push(answer);
+				}
+
+				else if (str.ToString() == "-")
+				{
+					String aStr = stack.Pop().ToString();
+					String bStr = stack.Pop().ToString();
+					a = Convert.ToDouble(aStr);
+					b = Convert.ToDouble(bStr);
+					answer = b - a;
+					stack.Push(answer);
+				}
+
+				else if (str.ToString() == "*")
+				{
+					String aStr = stack.Pop().ToString();
+					String bStr = stack.Pop().ToString();
+					a = Convert.ToDouble(aStr);
+					b = Convert.ToDouble(bStr);
+					answer = b * a;
+					stack.Push(answer);
+				}
+
+				else if (str.ToString() == "/")
+				{
+					String aStr = stack.Pop().ToString();
+					String bStr = stack.Pop().ToString();
+					a = Convert.ToDouble(aStr);
+					b = Convert.ToDouble(bStr);
+					answer = b / a;
+					stack.Push(answer);
+				}
+
+				else if (str.ToString() == "^")
+				{
+					String aStr = stack.Pop().ToString();
+					String bStr = stack.Pop().ToString();
+					a = Convert.ToDouble(aStr);
+					b = Convert.ToDouble(bStr);
+					answer = Math.Pow(b, a);
+					stack.Push(answer);
+				}
+
+				else
+				{
+					stack.Push(str);
+				}
+			}
+
+			return Convert.ToDouble(stack.Pop());
+		}
+
+		private int precedence(String c)
+		{
+			if (c == "^")
 				return 3;
-			else if (c == '*' || c == '/')
+			else if (c == "*" || c == "/")
 				return 2;
-			else if (c == '+' || c == '-')
+			else if (c == "+" || c == "-")
 				return 1;
 			else
 				return -1;
 		}
-
 	}
 }
