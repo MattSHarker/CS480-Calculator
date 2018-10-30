@@ -22,13 +22,9 @@ namespace CalculatorV2
 		private string fullString = "";
 		private string postfixStr = "";
 
-		private string[] infixArray;
-		private string[] postfixArray;
-
 		private double finalAnswer = 0.0;
 
 		object[] listOfElements;
-		
 
 		public Form1()
 		{
@@ -439,7 +435,7 @@ namespace CalculatorV2
 		private string prefixToPostfix(string str)
 		{
 			Stack stack = new Stack();
-			infixArray = str.Split(' ');
+			string[] infixArray = str.Split(' ');
 
 			foreach (var temp in infixArray)
 			{
