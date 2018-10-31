@@ -294,20 +294,19 @@ namespace CalculatorV2
 
 		private void buttonOpenParen_Click(object sender, EventArgs e)
 		{
+			int number;
+
 			if (tempString.EndsWith("."))
 				tempString += "0";
 
-			if (tempString.EndsWith("( "))
+			if (int.TryParse(tempString.Last().ToString(), out number))
+			{
+				tempString += " * ( ";
+			}
+			else if (tempString.EndsWith("( "))
 			{
 				tempString += "( ";
 			}
-			/*
-			else if (checkForOperator() || fullString.Length == 0)
-			{
-				updateFullString();
-				tempString = " ( ";
-			}
-			*/
 			else
 			{
 				updateFullString();
