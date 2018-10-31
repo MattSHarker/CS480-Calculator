@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -195,7 +196,9 @@ namespace CalculatorV2
 			if (!tempString.Contains("."))
 			{
 				// add the leading zero if empty for formatting purposes
-				if (tempString == "")
+				int number;
+				if (tempString == "" || !int.TryParse(tempString.Last().ToString(), out number)
+									 || tempString.EndsWith("( "))
 					tempString += "0";
 				tempString += ".";
 			}
@@ -294,7 +297,18 @@ namespace CalculatorV2
 			if (tempString.EndsWith("."))
 				tempString += "0";
 
-			if (checkForOperator() || fullString.Length == 0)
+			if (tempString.EndsWith("( "))
+			{
+				tempString += "( ";
+			}
+			/*
+			else if (checkForOperator() || fullString.Length == 0)
+			{
+				updateFullString();
+				tempString = " ( ";
+			}
+			*/
+			else
 			{
 				updateFullString();
 				tempString = " ( ";
@@ -341,10 +355,27 @@ namespace CalculatorV2
 
 		private void buttonBackspace_Click(object sender, EventArgs e)
 		{
-			if (tempString.Length > 0)
+			if (tempString.Length > 1)
+			{
+				if (tempString.EndsWith(" "))
+					tempString = tempString.Remove(tempString.Length - 1, 1);
+				
 				tempString = tempString.Remove(tempString.Length - 1, 1);
+			}
+			else if (tempString.Length == 1)
+			{
+				if (tempString.EndsWith(" "))
+					fullString = fullString.Remove(fullString.Length - 1, 1);
+
+				tempString = tempString.Remove(tempString.Length - 1, 1);
+			}
 			else if (fullString.Length > 0)
+			{
+				if (fullString.EndsWith(" "))
+					fullString = fullString.Remove(fullString.Length - 1, 1);
+				
 				fullString = fullString.Remove(fullString.Length - 1, 1);
+			}
 
 			updateDisplay();
 		}
@@ -414,6 +445,7 @@ namespace CalculatorV2
 		private void updateFullString()
 		{
 			fullString += tempString;
+			fullString.Replace("  ", " "); // ensure there are no double spaces, to be safe
 			tempString = "";
 		}
 
